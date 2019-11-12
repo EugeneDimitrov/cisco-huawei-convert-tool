@@ -1,11 +1,16 @@
 {% for int in ansible_facts.ip_interface_facts %}
 {%   if 'Vlan' in int.INTF %}
-interface {{ int.INTF }}
+interface vlanif{{ int.INTF[4:] }}
  ip address {{ int.IPADDR.0 }} {{ int.MASK.0 }}
 {%     for vrrp_group in ansible_facts.standby_brief_facts %}
 {%       if int.INTF[4:] == vrrp_group.IFACE[2:]  %}
  vrrp vrid {{ vrrp_group.GROUP }} virtual-ip {{ vrrp_group.VIRTUALIP }}
  vrrp vrid {{ vrrp_group.GROUP }} priority {{ vrrp_group.PRIORITY }}
+{%         for vrrp_time in ansible_facts.standby_facts %}
+{%           if vrrp_time.VIRTUAL_IP == vrrp_group.VIRTUALIP %}
+ vrrp vrid {{ vrrp_group.GROUP }} timer advertise {{ (vrrp_time.HELLO_TIME|int > 100) | ternary ("millisecond " + vrrp_time.HELLO_TIME,vrrp_time.HELLO_TIME) }} 
+{%           endif %}
+{%         endfor %}
 {%       endif %}
 {%     endfor %}
 #
