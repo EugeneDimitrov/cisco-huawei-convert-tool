@@ -1,0 +1,13 @@
+{% for int in ansible_facts.ip_interface_facts %}
+{%   if 'Vlan' in int.INTF %}
+interface {{ int.INTF }}
+ ip address {{ int.IPADDR.0 }} {{ int.MASK.0 }}
+{%     for vrrp_group in ansible_facts.standby_brief_facts %}
+{%       if int.INTF[4:] == vrrp_group.IFACE[2:]  %}
+ vrrp vrid {{ vrrp_group.GROUP }} virtual-ip {{ vrrp_group.VIRTUALIP }}
+ vrrp vrid {{ vrrp_group.GROUP }} priority {{ vrrp_group.PRIORITY }}
+{%       endif %}
+{%     endfor %}
+#
+{%   endif %}
+{% endfor %}

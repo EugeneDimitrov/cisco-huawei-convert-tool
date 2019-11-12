@@ -1,8 +1,8 @@
 {% for acl in ext_acls %}
-
-acl number {{ 3000 + acl }}
 {%   for ace in ansible_facts.ip_acl_facts %}
 {%     if (ace.ACL_NAME == acl|string) and (ace.ACTION != "") %}
+#
+acl number {{ 3000 + acl }}
 {%       if (ace.SRC_HOST or ace.DST_HOST) != "" %}
 {%         if (ace.SRC_HOST != "") and (ace.DST_HOST != "") %}
  rule {{ ace.LINE_NUM }} {{ ace.ACTION }} {{ ace.PROTOCOL }} source {{ ace.SRC_HOST }} 0{{ (ace.SRC_PORT_MATCH | length > 0) | ternary (" source-port " + ace.SRC_PORT_MATCH + " " + ace.SRC_PORT,ace.SRC_PORT_MATCH) }}{{ (ace.SRC_PORT_RANGE_START | length > 0) | ternary (ace.SRC_PORT_RANGE_START + " " + ace.SRC_PORT_RANGE_END,ace.SRC_PORT_RANGE_START) }} destination {{ ace.DST_HOST }} 0{{ (ace.DST_PORT_MATCH | length > 0) | ternary (" destination-port " + ace.DST_PORT_MATCH + " " + ace.DST_PORT + " ",ace.DST_PORT_MATCH) }}{{ (ace.DST_PORT_RANGE_START | length > 0) | ternary (ace.DST_PORT_RANGE_START + " " + ace.DST_PORT_RANGE_END,ace.DST_PORT_RANGE_START) }}

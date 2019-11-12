@@ -1,0 +1,7 @@
+{% for int in ansible_facts.ip_interface_facts %}
+{%   if 'Vlan' in int.INTF %}
+interface {{ int.INTF }}
+ ip address {{ int.IPADDR.0 }} {{ int.MASK.0 }}
+#
+{%   endif %}
+{% endfor %}

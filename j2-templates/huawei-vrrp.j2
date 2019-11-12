@@ -1,0 +1,6 @@
+{% for int in ansible_facts.standby_brief_facts %}
+interface {{ int.IFACE }}
+ vrrp vrid {{ int.GROUP }} virtual-ip {{ int.VIRTUALIP }}
+ vrrp vrid {{ int.GROUP }} priority {{ int.PRIORITY }}
+#
+{% endfor %}

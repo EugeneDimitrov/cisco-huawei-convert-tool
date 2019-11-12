@@ -1,9 +1,10 @@
 ---
-- hosts: ios
+- hosts: hub-sw1.lab.local
   vars:
     output_dir: results
     ios_commands:
-      - show ip route
+      - show ip interface
+      - show standby brief
 
   roles:
     - ansible-network.network-engine
@@ -26,9 +27,14 @@
 
     - name: "Apply TextFSM template"
       textfsm_parser:
-        file: "./textfsm-templates/cisco_ios_show_ip_route.template"
+        file: "./textfsm-templates/cisco_ios_show_ip_interface.template"
         content: "{{ command_output.stdout[0] }}"
-        name: ip_route_facts
+        name: ip_interface_facts 
 
-    - name: "Generating Huawei static routes configuration"
-      template: src=./j2-templates/huawei-route-static.j2 dest=./{{ output_dir }}/{{ inventory_hostname }}-static-routes.cfg
+    - textfsm_parser:
+        file: "./textfsm-templates/cisco_ios_show_standby_brief.template"
+        content: "{{ command_output.stdout[1] }}"
+        name: standby_brief_facts 
+
+    - name: "Generating Huawei interface vlan configuration"
+      template: src=./j2-templates/huawei-svi-vrrp.j2 dest=./{{ output_dir }}/{{ inventory_hostname }}-svi-vrrp.cfg

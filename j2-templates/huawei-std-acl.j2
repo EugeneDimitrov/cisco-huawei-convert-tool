@@ -1,8 +1,8 @@
 {% for acl in std_acls %}
-
-acl number {{ 2000 + acl }}
 {%   for ace in ansible_facts.ip_acl_facts %}
 {%     if (ace.ACL_NAME == acl|string) and (ace.ACTION != "") %}
+#
+acl number {{ 2000 + acl }}
  rule {{ ace.LINE_NUM }} {{ ace.ACTION }} source {{ (ace.SRC_HOST | length > 0) | ternary (ace.SRC_HOST + " 0",ace.SRC_HOST) }}{{ ace.SRC_ANY }}{{ ace.SRC_NETWORK }} {{ ace.SRC_WILDCARD }}
 {%     endif%}
 {%   endfor %}
