@@ -1,0 +1,78 @@
+---
+- hosts: ios
+  vars:
+    output_dir: results
+    acls_dir: acls 
+    routes_dir: routes
+    std_acls: [1,2,3,4,5,6,7,8,20]
+    ext_acls: "{{ range(100, 125) | list }}"
+    ios_commands:
+      - show ip access-lists
+      - show ip route
+
+  roles:
+    - ansible-network.network-engine
+
+  tasks:
+    - name: "Clear results directory"
+      local_action: file path={{ output_dir }} state=absent
+      changed_when: false
+      run_once: true
+
+    - name: "Create results folder structure"
+      local_action: file path={{ output_dir }} state=directory
+      changed_when: false
+      run_once: true
+
+    - local_action: file path={{ output_dir }}/{{ acls_dir }} state=directory
+      changed_when: false
+      run_once: true
+
+    - local_action: file path={{ output_dir }}/{{ routes_dir }} state=directory
+      changed_when: false
+      run_once: true
+
+    - name: "Gather data via show command"
+      ios_command:
+        commands: "{{ ios_commands }}"
+      register: command_output
+
+    - name: "Apply TextFSM template to ACL"
+      textfsm_parser:
+        file: "./textfsm-templates/cisco_ios_show_ip_access-lists.template"
+        content: "{{ command_output.stdout[0] }}"
+        name: ip_acl_facts 
+
+    - name: "Apply TextFSM template to route"
+      textfsm_parser:
+        file: "./textfsm-templates/cisco_ios_show_ip_route.template"
+        content: "{{ command_output.stdout[1] }}"
+        name: ip_route_facts
+
+    # - name: "Generating Huawei standart ACLs"
+    #   template: src=./templates/huawei-std-acl-template.j2 dest=./results/10-{{ inventory_hostname }}-std-acls.cfg
+
+    # - name: "Generating Huawei extended ACLs"
+    #   template: src=./templates/huawei-ext-acl-template.j2 dest=./results/20-{{ inventory_hostname }}-ext-acls.cfg
+
+    # - name: "Replace protocol names to numbers"
+    #   shell: |
+    #     sed -i -e 's/ ident / 113 /g 
+    #      s/ msrpc / 135 /g 
+    #      s/ onep-plain / 15001 /g 
+    #      s/ onep-tls / 15002 /g 
+    #      s/ pim-auto-rp / 496 /g 
+    #      s/ syslog / 514 /g 
+    #      s/ domain / 53 /g 
+    #      s/ isakmp / 500 /g 
+    #      s/ mobile-ip / 434 /g 
+    #      s/ netbios-ss / 139 /g 
+    #      s/ non500-isakmp / 4500 /g 
+    #      s/ pim-auto-rp / 496 /g 
+    #      s/ tacacs / 49 /g 
+    #      s/ ripv6 / 521 /g ' ./results/20-{{ inventory_hostname }}-ext-acls.cfg
+
+    # - name: "Generating single config file"
+    #   assemble:
+    #     src: ./results
+    #     dest: ./results/{{ inventory_hostname }}-all-acls.cfg

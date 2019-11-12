@@ -1,0 +1,5 @@
+{% for route in ansible_facts.ip_route_facts %}
+{%   if route.PROTOCOL == 'S' %}
+ip route-static {{ route.NETWORK }} mask-length {{ route.MASK }} {{ route.NEXTHOP_IP }}
+{%   endif %}
+{% endfor %}

@@ -1,0 +1,27 @@
+---
+- hosts: hub-sw1.lab.local
+  vars:
+    ios_commands:
+      - show standby
+
+  roles:
+    - ansible-network.network-engine
+
+  tasks:
+    - name: "Gather data via show command"
+      ios_command:
+        commands: "{{ ios_commands }}"
+      register: command_output
+
+    - name: "Test NTC template filters"
+      textfsm_parser:
+        file: "./ntc-templates/cisco_ios_show_standby.template"
+        content: "{{ command_output.stdout[0] }}"
+        name: standby_facts 
+
+    - name: "Debug ip routes"
+      debug:
+        var: ansible_facts.standby_facts
+
+    - name: "Templ"
+      template: src=huawei-template-route-static.j2 dest=result-route.txt

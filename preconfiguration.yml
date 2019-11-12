@@ -1,0 +1,6 @@
+---
+- hosts: ios
+  tasks:
+  - name: "Configure ACL on Cisco IOS"
+    ios_config:
+      src: "ios-acl-6000_2.cfg"
