@@ -1,0 +1,5 @@
+{% for vlan in ansible_facts.vlans_facts %}
+#
+vlan {{ vlan.VLAN_ID }}
+ name {{ vlan.NAME }}
+{% endfor %}

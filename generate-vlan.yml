@@ -1,0 +1,38 @@
+---
+- hosts: ios
+  vars:
+    output_dir: results
+    ios_commands:
+      - show vlan
+
+  roles:
+    - ansible-network.network-engine
+
+  tasks:
+    - name: "Clear results directory"
+      local_action: file path={{ output_dir }} state=absent
+      changed_when: false
+      run_once: true
+
+    - name: "Create results folder structure"
+      local_action: file path={{ output_dir }} state=directory
+      changed_when: false
+      run_once: true
+
+    - name: "Gather data via show command"
+      ios_command:
+        commands: "{{ ios_commands }}"
+      register: command_output
+
+    - name: "Apply TextFSM template"
+      textfsm_parser:
+        file: "./textfsm-templates/cisco_ios_show_vlan.template"
+        content: "{{ command_output.stdout[0] }}"
+        name: vlans_facts
+
+    # - name: "Debug ip routes"
+    #   debug:
+    #     var: ansible_facts.vlans_facts
+
+    - name: "Generating Huawei static routes configuration"
+      template: src=./j2-templates/huawei-vlans.j2 dest=./{{ output_dir }}/{{ inventory_hostname }}-vlans.cfg
