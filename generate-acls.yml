@@ -3,7 +3,7 @@
   vars:
     output_dir: results
     std_acls: [1,2,3,4,5,6,7,8,20]
-    ext_acls: "{{ range(100, 125) | list }}"
+    ext_acls: "{{ range(139, 147) | list }}"
     ios_commands:
       - show ip access-lists
 
